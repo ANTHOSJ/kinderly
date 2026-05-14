@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Slider } from "@/components/ui/slider"
@@ -9,9 +9,29 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { X, RotateCcw } from "lucide-react"
 
+export interface FilterState {
+  priceRange: [number, number]
+  experienceRange: [number, number]
+  trustScoreMin: number
+  certifications: string[]
+  availability: string[]
+  languages: string[]
+}
+
 interface FilterSidebarProps {
   onClose?: () => void
   isMobile?: boolean
+  filters?: FilterState
+  onFilterChange?: (filters: FilterState) => void
+}
+
+const defaultFilters: FilterState = {
+  priceRange: [10, 60],
+  experienceRange: [0, 20],
+  trustScoreMin: 50,
+  certifications: [],
+  availability: [],
+  languages: [],
 }
 
 const certifications = [
@@ -36,44 +56,50 @@ const languages = [
   { id: "spanish", label: "Spanish" },
   { id: "mandarin", label: "Mandarin" },
   { id: "french", label: "French" },
+  { id: "hindi", label: "Hindi" },
+  { id: "korean", label: "Korean" },
 ]
 
-export function FilterSidebar({ onClose, isMobile = false }: FilterSidebarProps) {
-  const [priceRange, setPriceRange] = useState([15, 40])
-  const [experienceRange, setExperienceRange] = useState([0, 15])
-  const [selectedCertifications, setSelectedCertifications] = useState<string[]>([])
-  const [selectedAvailability, setSelectedAvailability] = useState<string[]>([])
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([])
-  const [trustScoreMin, setTrustScoreMin] = useState([80])
+export function FilterSidebar({ 
+  onClose, 
+  isMobile = false,
+  filters = defaultFilters,
+  onFilterChange,
+}: FilterSidebarProps) {
+  
+  const updateFilter = useCallback(<K extends keyof FilterState>(
+    key: K, 
+    value: FilterState[K]
+  ) => {
+    if (onFilterChange) {
+      onFilterChange({ ...filters, [key]: value })
+    }
+  }, [filters, onFilterChange])
 
   const activeFiltersCount = 
-    selectedCertifications.length + 
-    selectedAvailability.length + 
-    selectedLanguages.length +
-    (priceRange[0] !== 15 || priceRange[1] !== 40 ? 1 : 0) +
-    (experienceRange[0] !== 0 || experienceRange[1] !== 15 ? 1 : 0) +
-    (trustScoreMin[0] !== 80 ? 1 : 0)
+    filters.certifications.length + 
+    filters.availability.length + 
+    filters.languages.length +
+    (filters.priceRange[0] !== 10 || filters.priceRange[1] !== 60 ? 1 : 0) +
+    (filters.experienceRange[0] !== 0 || filters.experienceRange[1] !== 20 ? 1 : 0) +
+    (filters.trustScoreMin !== 50 ? 1 : 0)
 
-  const resetFilters = () => {
-    setPriceRange([15, 40])
-    setExperienceRange([0, 15])
-    setSelectedCertifications([])
-    setSelectedAvailability([])
-    setSelectedLanguages([])
-    setTrustScoreMin([80])
-  }
+  const resetFilters = useCallback(() => {
+    if (onFilterChange) {
+      onFilterChange(defaultFilters)
+    }
+  }, [onFilterChange])
 
-  const toggleFilter = (
-    value: string, 
-    selected: string[], 
-    setSelected: React.Dispatch<React.SetStateAction<string[]>>
+  const toggleFilter = useCallback((
+    key: "certifications" | "availability" | "languages",
+    value: string
   ) => {
-    setSelected(prev => 
-      prev.includes(value) 
-        ? prev.filter(v => v !== value) 
-        : [...prev, value]
-    )
-  }
+    const currentValues = filters[key]
+    const newValues = currentValues.includes(value)
+      ? currentValues.filter(v => v !== value)
+      : [...currentValues, value]
+    updateFilter(key, newValues)
+  }, [filters, updateFilter])
 
   return (
     <div className="flex flex-col h-full">
@@ -113,16 +139,16 @@ export function FilterSidebar({ onClose, isMobile = false }: FilterSidebarProps)
         <div className="space-y-4">
           <Label className="text-sm font-medium text-foreground">Hourly Rate</Label>
           <Slider
-            value={priceRange}
-            onValueChange={setPriceRange}
+            value={filters.priceRange}
+            onValueChange={(value) => updateFilter("priceRange", value as [number, number])}
             min={10}
             max={60}
             step={1}
             className="w-full"
           />
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>${priceRange[0]}/hr</span>
-            <span>${priceRange[1]}/hr</span>
+            <span>${filters.priceRange[0]}/hr</span>
+            <span>${filters.priceRange[1]}/hr</span>
           </div>
         </div>
 
@@ -132,16 +158,16 @@ export function FilterSidebar({ onClose, isMobile = false }: FilterSidebarProps)
         <div className="space-y-4">
           <Label className="text-sm font-medium text-foreground">Years of Experience</Label>
           <Slider
-            value={experienceRange}
-            onValueChange={setExperienceRange}
+            value={filters.experienceRange}
+            onValueChange={(value) => updateFilter("experienceRange", value as [number, number])}
             min={0}
             max={20}
             step={1}
             className="w-full"
           />
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>{experienceRange[0]} years</span>
-            <span>{experienceRange[1]}+ years</span>
+            <span>{filters.experienceRange[0]} years</span>
+            <span>{filters.experienceRange[1] >= 20 ? "20+" : filters.experienceRange[1]} years</span>
           </div>
         </div>
 
@@ -151,20 +177,20 @@ export function FilterSidebar({ onClose, isMobile = false }: FilterSidebarProps)
         <div className="space-y-4">
           <Label className="text-sm font-medium text-foreground">Minimum Trust Score</Label>
           <Slider
-            value={trustScoreMin}
-            onValueChange={setTrustScoreMin}
+            value={[filters.trustScoreMin]}
+            onValueChange={(value) => updateFilter("trustScoreMin", value[0])}
             min={50}
             max={100}
             step={5}
             className="w-full"
           />
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">{trustScoreMin[0]}%+</span>
+            <span className="text-muted-foreground">{filters.trustScoreMin}%+</span>
             <Badge 
               variant="secondary" 
-              className={`rounded-full ${trustScoreMin[0] >= 90 ? 'bg-green-100 text-green-700' : 'bg-secondary text-secondary-foreground'}`}
+              className={`rounded-full ${filters.trustScoreMin >= 90 ? 'bg-green-100 text-green-700' : 'bg-secondary text-secondary-foreground'}`}
             >
-              {trustScoreMin[0] >= 90 ? 'Top Rated' : 'All Sitters'}
+              {filters.trustScoreMin >= 95 ? 'Top Rated' : filters.trustScoreMin >= 90 ? 'Excellent' : 'All Sitters'}
             </Badge>
           </div>
         </div>
@@ -176,18 +202,25 @@ export function FilterSidebar({ onClose, isMobile = false }: FilterSidebarProps)
           <Label className="text-sm font-medium text-foreground">Certifications</Label>
           <div className="space-y-3">
             {certifications.map((cert) => (
-              <div key={cert.id} className="flex items-center gap-3">
+              <div 
+                key={cert.id} 
+                className="flex items-center gap-3 group cursor-pointer"
+                onClick={() => toggleFilter("certifications", cert.id)}
+              >
                 <Checkbox
                   id={cert.id}
-                  checked={selectedCertifications.includes(cert.id)}
-                  onCheckedChange={() => toggleFilter(cert.id, selectedCertifications, setSelectedCertifications)}
+                  checked={filters.certifications.includes(cert.id)}
+                  onCheckedChange={() => toggleFilter("certifications", cert.id)}
                 />
                 <Label 
                   htmlFor={cert.id} 
-                  className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                  className="text-sm text-muted-foreground cursor-pointer group-hover:text-foreground transition-colors flex-1"
                 >
                   {cert.label}
                 </Label>
+                {filters.certifications.includes(cert.id) && (
+                  <span className="text-xs text-primary">Active</span>
+                )}
               </div>
             ))}
           </div>
@@ -200,18 +233,25 @@ export function FilterSidebar({ onClose, isMobile = false }: FilterSidebarProps)
           <Label className="text-sm font-medium text-foreground">Availability</Label>
           <div className="space-y-3">
             {availability.map((item) => (
-              <div key={item.id} className="flex items-center gap-3">
+              <div 
+                key={item.id} 
+                className="flex items-center gap-3 group cursor-pointer"
+                onClick={() => toggleFilter("availability", item.id)}
+              >
                 <Checkbox
                   id={item.id}
-                  checked={selectedAvailability.includes(item.id)}
-                  onCheckedChange={() => toggleFilter(item.id, selectedAvailability, setSelectedAvailability)}
+                  checked={filters.availability.includes(item.id)}
+                  onCheckedChange={() => toggleFilter("availability", item.id)}
                 />
                 <Label 
                   htmlFor={item.id} 
-                  className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                  className="text-sm text-muted-foreground cursor-pointer group-hover:text-foreground transition-colors flex-1"
                 >
                   {item.label}
                 </Label>
+                {item.id === "available-now" && filters.availability.includes(item.id) && (
+                  <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                )}
               </div>
             ))}
           </div>
@@ -224,15 +264,19 @@ export function FilterSidebar({ onClose, isMobile = false }: FilterSidebarProps)
           <Label className="text-sm font-medium text-foreground">Languages</Label>
           <div className="space-y-3">
             {languages.map((lang) => (
-              <div key={lang.id} className="flex items-center gap-3">
+              <div 
+                key={lang.id} 
+                className="flex items-center gap-3 group cursor-pointer"
+                onClick={() => toggleFilter("languages", lang.id)}
+              >
                 <Checkbox
                   id={lang.id}
-                  checked={selectedLanguages.includes(lang.id)}
-                  onCheckedChange={() => toggleFilter(lang.id, selectedLanguages, setSelectedLanguages)}
+                  checked={filters.languages.includes(lang.id)}
+                  onCheckedChange={() => toggleFilter("languages", lang.id)}
                 />
                 <Label 
                   htmlFor={lang.id} 
-                  className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                  className="text-sm text-muted-foreground cursor-pointer group-hover:text-foreground transition-colors"
                 >
                   {lang.label}
                 </Label>
@@ -244,14 +288,25 @@ export function FilterSidebar({ onClose, isMobile = false }: FilterSidebarProps)
 
       {/* Apply button for mobile */}
       {isMobile && (
-        <div className="pt-6 border-t border-border/50 mt-6">
+        <div className="pt-6 border-t border-border/50 mt-6 space-y-3">
           <Button 
             className="w-full rounded-xl" 
             size="lg"
             onClick={onClose}
           >
-            Show Results
+            Show {activeFiltersCount > 0 ? "Filtered " : ""}Results
           </Button>
+          {activeFiltersCount > 0 && (
+            <Button 
+              variant="outline"
+              className="w-full rounded-xl" 
+              size="lg"
+              onClick={resetFilters}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset All Filters
+            </Button>
+          )}
         </div>
       )}
     </div>

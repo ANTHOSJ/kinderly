@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -17,162 +17,388 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { SlidersHorizontal, Grid3X3, LayoutList, ArrowLeft } from "lucide-react"
-import { FilterSidebar } from "./filter-sidebar"
+import { Skeleton } from "@/components/ui/skeleton"
+import { SlidersHorizontal, Grid3X3, LayoutList, ArrowLeft, Search, Frown, RefreshCw } from "lucide-react"
+import { FilterSidebar, type FilterState } from "./filter-sidebar"
 import { SearchBar } from "./search-bar"
 import { BabysitterCard, type BabysitterData } from "./babysitter-card"
+import { sitters } from "@/lib/data"
 
-const babysitters: BabysitterData[] = [
-  {
-    id: "1",
-    name: "Emma Thompson",
-    avatar: "👩‍🦰",
-    rating: 4.9,
-    reviews: 156,
-    distance: "0.5 miles",
-    hourlyRate: 24,
-    experience: "8 years",
-    experienceYears: 8,
-    badges: ["CPR Certified", "First Aid", "Early Childhood Ed", "Background Checked"],
-    bio: "Former preschool teacher with a passion for creative learning. I bring educational activities and lots of patience to every session!",
-    available: true,
-    verified: true,
-    trustScore: 98,
-    languages: ["English"],
-    responseTime: "within 1 hour",
-  },
-  {
-    id: "2",
-    name: "Michael Chen",
-    avatar: "👨‍🦱",
-    rating: 5.0,
-    reviews: 89,
-    distance: "1.2 miles",
-    hourlyRate: 20,
-    experience: "4 years",
-    experienceYears: 4,
-    badges: ["CPR Certified", "Background Checked", "Pet Friendly"],
-    bio: "College student studying child psychology. Great with homework help and outdoor activities!",
-    available: true,
-    verified: true,
-    trustScore: 95,
-    languages: ["English", "Mandarin"],
-    responseTime: "within 30 min",
-  },
-  {
-    id: "3",
-    name: "Sofia Rodriguez",
-    avatar: "👩",
-    rating: 4.8,
-    reviews: 203,
-    distance: "0.8 miles",
-    hourlyRate: 26,
-    experience: "10 years",
-    experienceYears: 10,
-    badges: ["Newborn Care", "First Aid", "Multilingual", "Sleep Training"],
-    bio: "Experienced nanny specializing in infants and toddlers. Fluent in English and Spanish. Expert in establishing healthy routines.",
-    available: true,
-    verified: true,
-    trustScore: 99,
-    languages: ["English", "Spanish"],
-    responseTime: "within 2 hours",
-  },
-  {
-    id: "4",
-    name: "James Wilson",
-    avatar: "👨",
-    rating: 4.9,
-    reviews: 67,
-    distance: "1.5 miles",
-    hourlyRate: 22,
-    experience: "5 years",
-    experienceYears: 5,
-    badges: ["Special Needs", "CPR Certified", "Tutoring"],
-    bio: "Trained in special needs care. Patient, understanding, and dedicated to every child's wellbeing and development.",
-    available: false,
-    verified: true,
-    trustScore: 94,
-    languages: ["English"],
-    responseTime: "within 1 hour",
-  },
-  {
-    id: "5",
-    name: "Aisha Patel",
-    avatar: "👩🏽",
-    rating: 4.7,
-    reviews: 112,
-    distance: "2.1 miles",
-    hourlyRate: 23,
-    experience: "6 years",
-    experienceYears: 6,
-    badges: ["CPR Certified", "Music & Arts", "Homework Help"],
-    bio: "Creative babysitter who loves incorporating music and arts into playtime. Former music teacher with a gentle approach.",
-    available: true,
-    verified: true,
-    trustScore: 92,
-    languages: ["English", "Hindi"],
-    responseTime: "within 1 hour",
-  },
-  {
-    id: "6",
-    name: "David Park",
-    avatar: "👨🏻",
-    rating: 4.9,
-    reviews: 78,
-    distance: "0.9 miles",
-    hourlyRate: 25,
-    experience: "7 years",
-    experienceYears: 7,
-    badges: ["Sports & Fitness", "First Aid", "CPR Certified", "Tutoring"],
-    bio: "Active and energetic! I love taking kids to the park, playing sports, and keeping them engaged with fun outdoor activities.",
-    available: true,
-    verified: true,
-    trustScore: 96,
-    languages: ["English", "Korean"],
-    responseTime: "within 45 min",
-  },
-  {
-    id: "7",
-    name: "Lisa Anderson",
-    avatar: "👩🏼",
-    rating: 5.0,
-    reviews: 234,
-    distance: "1.8 miles",
-    hourlyRate: 30,
-    experience: "12 years",
-    experienceYears: 12,
-    badges: ["Newborn Care", "Sleep Training", "Meal Prep", "CPR Certified"],
-    bio: "Professional nanny with over a decade of experience. Specializing in newborns and establishing healthy sleep routines.",
-    available: true,
-    verified: true,
-    trustScore: 100,
-    languages: ["English", "French"],
-    responseTime: "within 30 min",
-  },
-  {
-    id: "8",
-    name: "Marcus Johnson",
-    avatar: "👨🏾",
-    rating: 4.8,
-    reviews: 91,
-    distance: "1.3 miles",
-    hourlyRate: 21,
-    experience: "3 years",
-    experienceYears: 3,
-    badges: ["CPR Certified", "Homework Help", "STEM Activities"],
-    bio: "Engineering student who makes learning fun! Great at helping with math, science projects, and building cool things together.",
-    available: true,
-    verified: true,
-    trustScore: 90,
-    languages: ["English"],
-    responseTime: "within 2 hours",
-  },
-]
+// Transform data from lib/data.ts to BabysitterData format
+const transformSitters = (): BabysitterData[] => {
+  return sitters.map((s) => ({
+    id: s.id,
+    name: s.name,
+    avatar: s.avatar,
+    rating: s.rating,
+    reviews: s.reviews,
+    distance: s.distance,
+    hourlyRate: s.hourlyRate,
+    experience: s.experience,
+    experienceYears: s.experienceYears,
+    badges: s.badges,
+    bio: s.bio,
+    available: s.available,
+    verified: s.verified,
+    trustScore: s.trustScore,
+    languages: s.languages,
+    responseTime: s.responseTime,
+    availability: s.availability,
+  }))
+}
+
+const allBabysitters = transformSitters()
+
+type SortOption = "recommended" | "price-low" | "price-high" | "rating" | "trust" | "distance" | "experience"
+
+function sortSitters(sitters: BabysitterData[], sortBy: SortOption): BabysitterData[] {
+  const sorted = [...sitters]
+  
+  switch (sortBy) {
+    case "price-low":
+      return sorted.sort((a, b) => a.hourlyRate - b.hourlyRate)
+    case "price-high":
+      return sorted.sort((a, b) => b.hourlyRate - a.hourlyRate)
+    case "rating":
+      return sorted.sort((a, b) => b.rating - a.rating)
+    case "trust":
+      return sorted.sort((a, b) => b.trustScore - a.trustScore)
+    case "distance":
+      return sorted.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance))
+    case "experience":
+      return sorted.sort((a, b) => b.experienceYears - a.experienceYears)
+    case "recommended":
+    default:
+      // Recommended: balance of rating, trust score, and availability
+      return sorted.sort((a, b) => {
+        const scoreA = (a.rating * 10) + a.trustScore + (a.available ? 20 : 0)
+        const scoreB = (b.rating * 10) + b.trustScore + (b.available ? 20 : 0)
+        return scoreB - scoreA
+      })
+  }
+}
+
+function filterSitters(sitters: BabysitterData[], filters: FilterState, searchQuery: string): BabysitterData[] {
+  return sitters.filter((sitter) => {
+    // Search query filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      const matchesName = sitter.name.toLowerCase().includes(query)
+      const matchesBio = sitter.bio.toLowerCase().includes(query)
+      const matchesBadges = sitter.badges.some(b => b.toLowerCase().includes(query))
+      const matchesLanguages = sitter.languages.some(l => l.toLowerCase().includes(query))
+      if (!matchesName && !matchesBio && !matchesBadges && !matchesLanguages) {
+        return false
+      }
+    }
+
+    // Price range filter
+    if (sitter.hourlyRate < filters.priceRange[0] || sitter.hourlyRate > filters.priceRange[1]) {
+      return false
+    }
+
+    // Experience range filter
+    if (sitter.experienceYears < filters.experienceRange[0]) {
+      return false
+    }
+    if (filters.experienceRange[1] < 20 && sitter.experienceYears > filters.experienceRange[1]) {
+      return false
+    }
+
+    // Trust score filter
+    if (sitter.trustScore < filters.trustScoreMin) {
+      return false
+    }
+
+    // Certification filters
+    if (filters.certifications.length > 0) {
+      const certMap: Record<string, string[]> = {
+        "cpr": ["CPR Certified", "CPR"],
+        "first-aid": ["First Aid"],
+        "early-childhood": ["Early Childhood Ed", "Early Childhood Education"],
+        "newborn-care": ["Newborn Care"],
+        "special-needs": ["Special Needs"],
+        "tutoring": ["Tutoring", "Homework Help"],
+      }
+      
+      const hasAllCerts = filters.certifications.every(certId => {
+        const certNames = certMap[certId] || []
+        return certNames.some(name => sitter.badges.some(b => b.includes(name)))
+      })
+      
+      if (!hasAllCerts) return false
+    }
+
+    // Availability filters
+    if (filters.availability.length > 0) {
+      const availabilityChecks: Record<string, boolean> = {
+        "available-now": sitter.available,
+        "weekdays": sitter.availability?.weekdays ?? true,
+        "weekends": sitter.availability?.weekends ?? true,
+        "evenings": sitter.availability?.evenings ?? true,
+        "overnight": sitter.availability?.overnight ?? false,
+      }
+      
+      const hasAvailability = filters.availability.some(avail => availabilityChecks[avail])
+      if (!hasAvailability) return false
+    }
+
+    // Language filters
+    if (filters.languages.length > 0) {
+      const langMap: Record<string, string> = {
+        "english": "English",
+        "spanish": "Spanish",
+        "mandarin": "Mandarin",
+        "french": "French",
+        "hindi": "Hindi",
+        "korean": "Korean",
+      }
+      
+      const hasLanguage = filters.languages.some(langId => {
+        const langName = langMap[langId]
+        return sitter.languages.includes(langName)
+      })
+      
+      if (!hasLanguage) return false
+    }
+
+    return true
+  })
+}
+
+// Loading skeleton component
+function SitterCardSkeleton() {
+  return (
+    <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
+      <Skeleton className="h-48 w-full" />
+      <div className="p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-5 w-5 rounded-full" />
+        </div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-6 w-20 rounded-full" />
+          <Skeleton className="h-6 w-16 rounded-full" />
+          <Skeleton className="h-6 w-24 rounded-full" />
+        </div>
+        <Skeleton className="h-12 w-full" />
+        <div className="flex items-center justify-between pt-4 border-t border-border/50">
+          <Skeleton className="h-8 w-20" />
+          <Skeleton className="h-10 w-28 rounded-xl" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Empty state component
+function EmptyState({ 
+  onReset, 
+  hasFilters 
+}: { 
+  onReset: () => void
+  hasFilters: boolean 
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+      <div className="h-20 w-20 rounded-full bg-secondary/50 flex items-center justify-center mb-6">
+        <Frown className="h-10 w-10 text-muted-foreground" />
+      </div>
+      <h3 className="text-xl font-semibold text-foreground mb-2">No sitters found</h3>
+      <p className="text-muted-foreground max-w-md mb-6">
+        {hasFilters 
+          ? "We couldn't find any sitters matching your current filters. Try adjusting your search criteria."
+          : "We couldn't find any sitters in your area. Try searching in a different location."}
+      </p>
+      {hasFilters && (
+        <Button 
+          variant="outline" 
+          className="rounded-full gap-2"
+          onClick={onReset}
+        >
+          <RefreshCw className="h-4 w-4" />
+          Reset Filters
+        </Button>
+      )}
+    </div>
+  )
+}
+
+// Quick filter badge component
+function QuickFilterBadge({ 
+  label, 
+  isActive, 
+  onClick 
+}: { 
+  label: string
+  isActive: boolean
+  onClick: () => void 
+}) {
+  return (
+    <Badge 
+      variant={isActive ? "default" : "secondary"}
+      className={`rounded-full cursor-pointer transition-all hover:scale-105 ${
+        isActive 
+          ? "bg-primary text-primary-foreground" 
+          : "hover:bg-primary/10 hover:text-primary"
+      }`}
+      onClick={onClick}
+    >
+      {label}
+    </Badge>
+  )
+}
 
 export function DiscoveryPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [sortBy, setSortBy] = useState("recommended")
+  const [sortBy, setSortBy] = useState<SortOption>("recommended")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [filters, setFilters] = useState<FilterState>({
+    priceRange: [10, 60],
+    experienceRange: [0, 20],
+    trustScoreMin: 50,
+    certifications: [],
+    availability: [],
+    languages: [],
+  })
+
+  // Quick filters state
+  const [quickFilters, setQuickFilters] = useState({
+    cprCertified: false,
+    availableNow: false,
+    fiveYearsExp: false,
+    topRated: false,
+  })
+
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Apply quick filters to main filters
+  const handleQuickFilter = useCallback((filter: keyof typeof quickFilters) => {
+    setQuickFilters(prev => {
+      const newState = { ...prev, [filter]: !prev[filter] }
+      
+      // Update main filters based on quick filter changes
+      setFilters(prevFilters => {
+        const newFilters = { ...prevFilters }
+        
+        if (filter === "cprCertified") {
+          if (newState.cprCertified) {
+            newFilters.certifications = [...new Set([...newFilters.certifications, "cpr"])]
+          } else {
+            newFilters.certifications = newFilters.certifications.filter(c => c !== "cpr")
+          }
+        }
+        
+        if (filter === "availableNow") {
+          if (newState.availableNow) {
+            newFilters.availability = [...new Set([...newFilters.availability, "available-now"])]
+          } else {
+            newFilters.availability = newFilters.availability.filter(a => a !== "available-now")
+          }
+        }
+        
+        if (filter === "fiveYearsExp") {
+          if (newState.fiveYearsExp) {
+            newFilters.experienceRange = [5, 20]
+          } else {
+            newFilters.experienceRange = [0, 20]
+          }
+        }
+        
+        if (filter === "topRated") {
+          if (newState.topRated) {
+            newFilters.trustScoreMin = 95
+          } else {
+            newFilters.trustScoreMin = 50
+          }
+        }
+        
+        return newFilters
+      })
+      
+      return newState
+    })
+  }, [])
+
+  // Handle filter changes from sidebar
+  const handleFilterChange = useCallback((newFilters: FilterState) => {
+    setFilters(newFilters)
+    
+    // Update quick filters to reflect sidebar changes
+    setQuickFilters({
+      cprCertified: newFilters.certifications.includes("cpr"),
+      availableNow: newFilters.availability.includes("available-now"),
+      fiveYearsExp: newFilters.experienceRange[0] >= 5,
+      topRated: newFilters.trustScoreMin >= 95,
+    })
+  }, [])
+
+  // Reset all filters
+  const resetFilters = useCallback(() => {
+    setFilters({
+      priceRange: [10, 60],
+      experienceRange: [0, 20],
+      trustScoreMin: 50,
+      certifications: [],
+      availability: [],
+      languages: [],
+    })
+    setQuickFilters({
+      cprCertified: false,
+      availableNow: false,
+      fiveYearsExp: false,
+      topRated: false,
+    })
+    setSearchQuery("")
+  }, [])
+
+  // Memoized filtered and sorted results
+  const filteredSitters = useMemo(() => {
+    const filtered = filterSitters(allBabysitters, filters, searchQuery)
+    return sortSitters(filtered, sortBy)
+  }, [filters, searchQuery, sortBy])
+
+  const availableCount = useMemo(() => 
+    filteredSitters.filter(s => s.available).length, 
+    [filteredSitters]
+  )
+
+  const hasActiveFilters = useMemo(() => {
+    return (
+      filters.priceRange[0] !== 10 ||
+      filters.priceRange[1] !== 60 ||
+      filters.experienceRange[0] !== 0 ||
+      filters.experienceRange[1] !== 20 ||
+      filters.trustScoreMin !== 50 ||
+      filters.certifications.length > 0 ||
+      filters.availability.length > 0 ||
+      filters.languages.length > 0 ||
+      searchQuery !== ""
+    )
+  }, [filters, searchQuery])
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0
+    if (filters.priceRange[0] !== 10 || filters.priceRange[1] !== 60) count++
+    if (filters.experienceRange[0] !== 0 || filters.experienceRange[1] !== 20) count++
+    if (filters.trustScoreMin !== 50) count++
+    if (filters.certifications.length > 0) count += filters.certifications.length
+    if (filters.availability.length > 0) count += filters.availability.length
+    if (filters.languages.length > 0) count += filters.languages.length
+    return count
+  }, [filters])
 
   return (
     <div className="min-h-screen bg-background">
@@ -188,7 +414,7 @@ export function DiscoveryPage() {
             </Link>
             <div className="flex items-center gap-3">
               <Badge variant="secondary" className="hidden sm:flex rounded-full px-4 py-1.5">
-                {babysitters.length} sitters nearby
+                {filteredSitters.length} sitters found
               </Badge>
               <Button variant="outline" className="rounded-full" asChild>
                 <Link href="/">Back to Home</Link>
@@ -204,7 +430,34 @@ export function DiscoveryPage() {
           <SearchBar 
             onFilterClick={() => setMobileFiltersOpen(true)}
             showFilterButton
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
           />
+          
+          {/* Quick filters */}
+          <div className="flex flex-wrap items-center gap-2 mt-4">
+            <span className="text-sm text-muted-foreground mr-1">Quick filters:</span>
+            <QuickFilterBadge 
+              label="CPR Certified" 
+              isActive={quickFilters.cprCertified}
+              onClick={() => handleQuickFilter("cprCertified")}
+            />
+            <QuickFilterBadge 
+              label="Available Now" 
+              isActive={quickFilters.availableNow}
+              onClick={() => handleQuickFilter("availableNow")}
+            />
+            <QuickFilterBadge 
+              label="5+ Years Exp" 
+              isActive={quickFilters.fiveYearsExp}
+              onClick={() => handleQuickFilter("fiveYearsExp")}
+            />
+            <QuickFilterBadge 
+              label="Top Rated" 
+              isActive={quickFilters.topRated}
+              onClick={() => handleQuickFilter("topRated")}
+            />
+          </div>
         </div>
 
         {/* Results header */}
@@ -212,12 +465,29 @@ export function DiscoveryPage() {
           <div>
             <h1 className="text-2xl font-semibold text-foreground">Trusted Babysitters Near You</h1>
             <p className="text-muted-foreground mt-1">
-              {babysitters.filter(s => s.available).length} available now | {babysitters.length} total
+              {isLoading ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  Searching...
+                </span>
+              ) : (
+                <>
+                  {availableCount} available now | {filteredSitters.length} total
+                  {hasActiveFilters && (
+                    <button 
+                      onClick={resetFilters}
+                      className="ml-2 text-primary hover:underline text-sm"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-3">
             {/* Sort dropdown */}
-            <Select value={sortBy} onValueChange={setSortBy}>
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
               <SelectTrigger className="w-44 rounded-xl">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -228,6 +498,7 @@ export function DiscoveryPage() {
                 <SelectItem value="rating">Highest Rated</SelectItem>
                 <SelectItem value="trust">Trust Score</SelectItem>
                 <SelectItem value="distance">Nearest</SelectItem>
+                <SelectItem value="experience">Most Experienced</SelectItem>
               </SelectContent>
             </Select>
 
@@ -259,6 +530,11 @@ export function DiscoveryPage() {
             >
               <SlidersHorizontal className="h-4 w-4" />
               Filters
+              {activeFiltersCount > 0 && (
+                <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs rounded-full">
+                  {activeFiltersCount}
+                </Badge>
+              )}
             </Button>
           </div>
         </div>
@@ -268,32 +544,57 @@ export function DiscoveryPage() {
           {/* Desktop sidebar */}
           <aside className="hidden xl:block w-72 flex-shrink-0">
             <div className="sticky top-24 bg-card border border-border/50 rounded-2xl p-6">
-              <FilterSidebar />
+              <FilterSidebar 
+                filters={filters}
+                onFilterChange={handleFilterChange}
+              />
             </div>
           </aside>
 
           {/* Results grid */}
           <div className="flex-1">
-            <div className={`grid gap-6 ${
-              viewMode === "grid" 
-                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3" 
-                : "grid-cols-1"
-            }`}>
-              {babysitters.map((sitter) => (
-                <BabysitterCard key={sitter.id} sitter={sitter} />
-              ))}
-            </div>
+            {isLoading ? (
+              // Loading state
+              <div className={`grid gap-6 ${
+                viewMode === "grid" 
+                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3" 
+                  : "grid-cols-1"
+              }`}>
+                {[...Array(6)].map((_, i) => (
+                  <SitterCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : filteredSitters.length === 0 ? (
+              // Empty state
+              <EmptyState onReset={resetFilters} hasFilters={hasActiveFilters} />
+            ) : (
+              // Results
+              <>
+                <div className={`grid gap-6 ${
+                  viewMode === "grid" 
+                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3" 
+                    : "grid-cols-1"
+                }`}>
+                  {filteredSitters.map((sitter) => (
+                    <BabysitterCard key={sitter.id} sitter={sitter} viewMode={viewMode} />
+                  ))}
+                </div>
 
-            {/* Load more */}
-            <div className="text-center mt-12">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="rounded-full px-8 border-2 hover:bg-secondary transition-all hover:scale-105"
-              >
-                Load More Sitters
-              </Button>
-            </div>
+                {/* Results count footer */}
+                <div className="text-center mt-12">
+                  <p className="text-muted-foreground mb-4">
+                    Showing all {filteredSitters.length} sitters
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="rounded-full px-8 border-2 hover:bg-secondary transition-all hover:scale-105"
+                  >
+                    Load More Sitters
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </main>
@@ -306,7 +607,9 @@ export function DiscoveryPage() {
           </SheetHeader>
           <FilterSidebar 
             onClose={() => setMobileFiltersOpen(false)} 
-            isMobile 
+            isMobile
+            filters={filters}
+            onFilterChange={handleFilterChange}
           />
         </SheetContent>
       </Sheet>
