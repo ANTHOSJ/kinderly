@@ -1,0 +1,711 @@
+// Shared demo data for the Kinderly application
+
+export interface Sitter {
+  id: string
+  name: string
+  avatar: string
+  rating: number
+  reviews: number
+  distance: string
+  hourlyRate: number
+  experience: string
+  experienceYears: number
+  badges: string[]
+  bio: string
+  available: boolean
+  verified: boolean
+  trustScore: number
+  languages: string[]
+  responseTime: string
+  location: string
+  availability: {
+    weekdays: boolean
+    weekends: boolean
+    evenings: boolean
+    overnight: boolean
+  }
+  gallery: string[]
+  certifications: {
+    name: string
+    issuer: string
+    year: number
+  }[]
+  education: string
+  specialties: string[]
+}
+
+export interface Review {
+  id: string
+  sitterId: string
+  parentName: string
+  parentAvatar: string
+  rating: number
+  date: string
+  content: string
+  helpful: number
+}
+
+export interface Booking {
+  id: string
+  sitterId: string
+  sitterName: string
+  sitterAvatar: string
+  date: string
+  startTime: string
+  endTime: string
+  hours: number
+  totalCost: number
+  status: "pending" | "confirmed" | "completed" | "cancelled"
+  notes: string
+  address: string
+  children: { name: string; age: number }[]
+}
+
+export interface Message {
+  id: string
+  conversationId: string
+  senderId: string
+  content: string
+  timestamp: string
+  read: boolean
+  type: "text" | "booking_request" | "booking_confirmed" | "system"
+}
+
+export interface Conversation {
+  id: string
+  participants: {
+    id: string
+    name: string
+    avatar: string
+    role: "parent" | "sitter"
+  }[]
+  lastMessage: string
+  lastMessageTime: string
+  unread: number
+}
+
+export const sitters: Sitter[] = [
+  {
+    id: "1",
+    name: "Emma Thompson",
+    avatar: "👩‍🦰",
+    rating: 4.9,
+    reviews: 156,
+    distance: "0.5 miles",
+    hourlyRate: 24,
+    experience: "8 years",
+    experienceYears: 8,
+    badges: ["CPR Certified", "First Aid", "Early Childhood Ed", "Background Checked"],
+    bio: "Former preschool teacher with a passion for creative learning. I bring educational activities and lots of patience to every session! I believe every child has unique gifts, and I love helping them discover and develop their talents through play-based learning.",
+    available: true,
+    verified: true,
+    trustScore: 98,
+    languages: ["English"],
+    responseTime: "within 1 hour",
+    location: "Brooklyn, NY",
+    availability: {
+      weekdays: true,
+      weekends: true,
+      evenings: true,
+      overnight: false,
+    },
+    gallery: ["👶", "🎨", "📚", "🎵"],
+    certifications: [
+      { name: "CPR & First Aid", issuer: "American Red Cross", year: 2023 },
+      { name: "Early Childhood Education", issuer: "NYU", year: 2018 },
+      { name: "Child Development Associate", issuer: "CDA Council", year: 2019 },
+    ],
+    education: "Bachelor's in Early Childhood Education, NYU",
+    specialties: ["Arts & Crafts", "Reading", "Educational Games", "Toddlers"],
+  },
+  {
+    id: "2",
+    name: "Michael Chen",
+    avatar: "👨‍🦱",
+    rating: 5.0,
+    reviews: 89,
+    distance: "1.2 miles",
+    hourlyRate: 20,
+    experience: "4 years",
+    experienceYears: 4,
+    badges: ["CPR Certified", "Background Checked", "Pet Friendly"],
+    bio: "College student studying child psychology. Great with homework help and outdoor activities! I'm passionate about child development and love creating fun, educational experiences.",
+    available: true,
+    verified: true,
+    trustScore: 95,
+    languages: ["English", "Mandarin"],
+    responseTime: "within 30 min",
+    location: "Manhattan, NY",
+    availability: {
+      weekdays: true,
+      weekends: true,
+      evenings: true,
+      overnight: false,
+    },
+    gallery: ["🎮", "⚽", "📖", "🎒"],
+    certifications: [
+      { name: "CPR & First Aid", issuer: "American Red Cross", year: 2024 },
+      { name: "Background Check", issuer: "Kinderly Verified", year: 2024 },
+    ],
+    education: "Child Psychology, Columbia University (Current)",
+    specialties: ["Homework Help", "Sports", "Video Games", "School-Age Kids"],
+  },
+  {
+    id: "3",
+    name: "Sofia Rodriguez",
+    avatar: "👩",
+    rating: 4.8,
+    reviews: 203,
+    distance: "0.8 miles",
+    hourlyRate: 26,
+    experience: "10 years",
+    experienceYears: 10,
+    badges: ["Newborn Care", "First Aid", "Multilingual", "Sleep Training"],
+    bio: "Experienced nanny specializing in infants and toddlers. Fluent in English and Spanish. Expert in establishing healthy routines and sleep training. I treat every family like my own.",
+    available: true,
+    verified: true,
+    trustScore: 99,
+    languages: ["English", "Spanish"],
+    responseTime: "within 2 hours",
+    location: "Queens, NY",
+    availability: {
+      weekdays: true,
+      weekends: false,
+      evenings: true,
+      overnight: true,
+    },
+    gallery: ["👶", "🍼", "😴", "🎶"],
+    certifications: [
+      { name: "Newborn Care Specialist", issuer: "Newborn Care Solutions", year: 2020 },
+      { name: "Sleep Training Expert", issuer: "Taking Cara Babies", year: 2021 },
+      { name: "CPR & First Aid", issuer: "American Red Cross", year: 2024 },
+    ],
+    education: "Certified Newborn Care Specialist",
+    specialties: ["Newborns", "Sleep Training", "Bilingual Care", "Meal Prep"],
+  },
+  {
+    id: "4",
+    name: "James Wilson",
+    avatar: "👨",
+    rating: 4.9,
+    reviews: 67,
+    distance: "1.5 miles",
+    hourlyRate: 22,
+    experience: "5 years",
+    experienceYears: 5,
+    badges: ["Special Needs", "CPR Certified", "Tutoring"],
+    bio: "Trained in special needs care. Patient, understanding, and dedicated to every child's wellbeing and development. I believe all children deserve compassionate, individualized attention.",
+    available: false,
+    verified: true,
+    trustScore: 94,
+    languages: ["English"],
+    responseTime: "within 1 hour",
+    location: "Bronx, NY",
+    availability: {
+      weekdays: true,
+      weekends: true,
+      evenings: false,
+      overnight: false,
+    },
+    gallery: ["🧩", "🎨", "📚", "🎯"],
+    certifications: [
+      { name: "Special Needs Care", issuer: "Autism Speaks", year: 2022 },
+      { name: "CPR & First Aid", issuer: "American Red Cross", year: 2023 },
+      { name: "Applied Behavior Analysis", issuer: "BACB", year: 2021 },
+    ],
+    education: "Bachelor's in Special Education, Fordham University",
+    specialties: ["Special Needs", "Autism Care", "Sensory Activities", "Tutoring"],
+  },
+  {
+    id: "5",
+    name: "Aisha Patel",
+    avatar: "👩🏽",
+    rating: 4.7,
+    reviews: 112,
+    distance: "2.1 miles",
+    hourlyRate: 23,
+    experience: "6 years",
+    experienceYears: 6,
+    badges: ["CPR Certified", "Music & Arts", "Homework Help"],
+    bio: "Creative babysitter who loves incorporating music and arts into playtime. Former music teacher with a gentle approach. I believe creativity is the key to happy, engaged children!",
+    available: true,
+    verified: true,
+    trustScore: 92,
+    languages: ["English", "Hindi"],
+    responseTime: "within 1 hour",
+    location: "Jersey City, NJ",
+    availability: {
+      weekdays: true,
+      weekends: true,
+      evenings: true,
+      overnight: false,
+    },
+    gallery: ["🎵", "🎨", "🎹", "🎭"],
+    certifications: [
+      { name: "Music Education", issuer: "Berklee Online", year: 2020 },
+      { name: "CPR & First Aid", issuer: "American Red Cross", year: 2024 },
+    ],
+    education: "Bachelor's in Music Education, Rutgers University",
+    specialties: ["Music", "Arts & Crafts", "Homework Help", "Creativity"],
+  },
+  {
+    id: "6",
+    name: "David Park",
+    avatar: "👨🏻",
+    rating: 4.9,
+    reviews: 78,
+    distance: "0.9 miles",
+    hourlyRate: 25,
+    experience: "7 years",
+    experienceYears: 7,
+    badges: ["Sports & Fitness", "First Aid", "CPR Certified", "Tutoring"],
+    bio: "Active and energetic! I love taking kids to the park, playing sports, and keeping them engaged with fun outdoor activities. Health and fitness are my passion!",
+    available: true,
+    verified: true,
+    trustScore: 96,
+    languages: ["English", "Korean"],
+    responseTime: "within 45 min",
+    location: "Hoboken, NJ",
+    availability: {
+      weekdays: true,
+      weekends: true,
+      evenings: false,
+      overnight: false,
+    },
+    gallery: ["⚽", "🏀", "🚴", "🏃"],
+    certifications: [
+      { name: "Youth Sports Coaching", issuer: "NAYS", year: 2021 },
+      { name: "CPR & First Aid", issuer: "American Red Cross", year: 2024 },
+      { name: "Personal Training", issuer: "ACE", year: 2020 },
+    ],
+    education: "Bachelor's in Kinesiology, NYU",
+    specialties: ["Sports", "Outdoor Activities", "Fitness", "Active Play"],
+  },
+  {
+    id: "7",
+    name: "Lisa Anderson",
+    avatar: "👩🏼",
+    rating: 5.0,
+    reviews: 234,
+    distance: "1.8 miles",
+    hourlyRate: 30,
+    experience: "12 years",
+    experienceYears: 12,
+    badges: ["Newborn Care", "Sleep Training", "Meal Prep", "CPR Certified"],
+    bio: "Professional nanny with over a decade of experience. Specializing in newborns and establishing healthy sleep routines. I'm committed to providing the highest quality care.",
+    available: true,
+    verified: true,
+    trustScore: 100,
+    languages: ["English", "French"],
+    responseTime: "within 30 min",
+    location: "Upper East Side, NY",
+    availability: {
+      weekdays: true,
+      weekends: true,
+      evenings: true,
+      overnight: true,
+    },
+    gallery: ["👶", "🍳", "😴", "📖"],
+    certifications: [
+      { name: "Professional Nanny Certificate", issuer: "INA", year: 2018 },
+      { name: "Newborn Care Specialist", issuer: "Newborn Care Solutions", year: 2019 },
+      { name: "CPR & First Aid", issuer: "American Red Cross", year: 2024 },
+      { name: "Nutrition for Children", issuer: "Cornell Online", year: 2022 },
+    ],
+    education: "Professional Nanny Training, International Nanny Association",
+    specialties: ["Newborns", "Sleep Training", "Meal Prep", "Routine Building"],
+  },
+  {
+    id: "8",
+    name: "Marcus Johnson",
+    avatar: "👨🏾",
+    rating: 4.8,
+    reviews: 91,
+    distance: "1.3 miles",
+    hourlyRate: 21,
+    experience: "3 years",
+    experienceYears: 3,
+    badges: ["CPR Certified", "Homework Help", "STEM Activities"],
+    bio: "Engineering student who makes learning fun! Great at helping with math, science projects, and building cool things together. Let's explore the world of STEM!",
+    available: true,
+    verified: true,
+    trustScore: 90,
+    languages: ["English"],
+    responseTime: "within 2 hours",
+    location: "Williamsburg, NY",
+    availability: {
+      weekdays: false,
+      weekends: true,
+      evenings: true,
+      overnight: false,
+    },
+    gallery: ["🔬", "🤖", "🧮", "💻"],
+    certifications: [
+      { name: "CPR & First Aid", issuer: "American Red Cross", year: 2024 },
+      { name: "STEM Education", issuer: "MIT OpenCourseWare", year: 2023 },
+    ],
+    education: "Engineering, MIT (Current)",
+    specialties: ["STEM", "Homework Help", "Science Projects", "Coding"],
+  },
+]
+
+export const reviews: Review[] = [
+  {
+    id: "r1",
+    sitterId: "1",
+    parentName: "Jennifer M.",
+    parentAvatar: "👩‍💼",
+    rating: 5,
+    date: "2024-01-15",
+    content: "Emma is absolutely wonderful with our 3-year-old! She came prepared with educational activities and our daughter couldn't stop talking about her. Will definitely book again!",
+    helpful: 24,
+  },
+  {
+    id: "r2",
+    sitterId: "1",
+    parentName: "Robert K.",
+    parentAvatar: "👨‍💻",
+    rating: 5,
+    date: "2024-01-10",
+    content: "Professional, reliable, and our kids love her. Emma has been our go-to babysitter for the past 6 months and she never disappoints.",
+    helpful: 18,
+  },
+  {
+    id: "r3",
+    sitterId: "2",
+    parentName: "Sarah L.",
+    parentAvatar: "👩",
+    rating: 5,
+    date: "2024-01-12",
+    content: "Michael helped our son with his math homework and made it fun! Great energy and very responsible. Highly recommend!",
+    helpful: 12,
+  },
+  {
+    id: "r4",
+    sitterId: "3",
+    parentName: "David T.",
+    parentAvatar: "👨",
+    rating: 5,
+    date: "2024-01-08",
+    content: "Sofia is a newborn care expert. She helped us establish a sleep routine that changed our lives. Worth every penny!",
+    helpful: 45,
+  },
+  {
+    id: "r5",
+    sitterId: "7",
+    parentName: "Amanda R.",
+    parentAvatar: "👩‍🦰",
+    rating: 5,
+    date: "2024-01-20",
+    content: "Lisa is simply the best. We've had her care for our twins since they were born, and she treats them like her own grandchildren.",
+    helpful: 67,
+  },
+]
+
+export const demoBookings: Booking[] = [
+  {
+    id: "b1",
+    sitterId: "1",
+    sitterName: "Emma Thompson",
+    sitterAvatar: "👩‍🦰",
+    date: "2024-02-15",
+    startTime: "18:00",
+    endTime: "22:00",
+    hours: 4,
+    totalCost: 96,
+    status: "confirmed",
+    notes: "Please prepare dinner. Kids can have screen time after 7pm.",
+    address: "123 Main St, Brooklyn, NY",
+    children: [
+      { name: "Sophie", age: 5 },
+      { name: "Max", age: 3 },
+    ],
+  },
+  {
+    id: "b2",
+    sitterId: "2",
+    sitterName: "Michael Chen",
+    sitterAvatar: "👨‍🦱",
+    date: "2024-02-18",
+    startTime: "14:00",
+    endTime: "18:00",
+    hours: 4,
+    totalCost: 80,
+    status: "pending",
+    notes: "Help with homework and outdoor play if weather permits.",
+    address: "456 Oak Ave, Manhattan, NY",
+    children: [{ name: "Ethan", age: 8 }],
+  },
+  {
+    id: "b3",
+    sitterId: "3",
+    sitterName: "Sofia Rodriguez",
+    sitterAvatar: "👩",
+    date: "2024-01-28",
+    startTime: "09:00",
+    endTime: "17:00",
+    hours: 8,
+    totalCost: 208,
+    status: "completed",
+    notes: "Follow the feeding schedule on the fridge.",
+    address: "789 Elm St, Queens, NY",
+    children: [{ name: "Baby Mia", age: 0 }],
+  },
+]
+
+export const demoConversations: Conversation[] = [
+  {
+    id: "c1",
+    participants: [
+      { id: "parent1", name: "You", avatar: "👤", role: "parent" },
+      { id: "1", name: "Emma Thompson", avatar: "👩‍🦰", role: "sitter" },
+    ],
+    lastMessage: "Perfect! I'll see you and the kids on Saturday at 6pm!",
+    lastMessageTime: "2024-01-25T14:30:00",
+    unread: 0,
+  },
+  {
+    id: "c2",
+    participants: [
+      { id: "parent1", name: "You", avatar: "👤", role: "parent" },
+      { id: "2", name: "Michael Chen", avatar: "👨‍🦱", role: "sitter" },
+    ],
+    lastMessage: "I'd be happy to help with the science project!",
+    lastMessageTime: "2024-01-25T10:15:00",
+    unread: 1,
+  },
+  {
+    id: "c3",
+    participants: [
+      { id: "parent1", name: "You", avatar: "👤", role: "parent" },
+      { id: "3", name: "Sofia Rodriguez", avatar: "👩", role: "sitter" },
+    ],
+    lastMessage: "The sleep training tips I shared should help. Let me know how tonight goes!",
+    lastMessageTime: "2024-01-24T20:45:00",
+    unread: 0,
+  },
+]
+
+export const demoMessages: Message[] = [
+  {
+    id: "m1",
+    conversationId: "c1",
+    senderId: "parent1",
+    content: "Hi Emma! Are you available this Saturday evening from 6-10pm?",
+    timestamp: "2024-01-25T09:00:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m2",
+    conversationId: "c1",
+    senderId: "1",
+    content: "Hi! Yes, I'm available on Saturday. Happy to help!",
+    timestamp: "2024-01-25T09:15:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m3",
+    conversationId: "c1",
+    senderId: "parent1",
+    content: "Great! I've sent a booking request.",
+    timestamp: "2024-01-25T09:20:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m4",
+    conversationId: "c1",
+    senderId: "system",
+    content: "Booking request sent for Saturday, Jan 27 at 6:00 PM",
+    timestamp: "2024-01-25T09:21:00",
+    read: true,
+    type: "booking_request",
+  },
+  {
+    id: "m5",
+    conversationId: "c1",
+    senderId: "1",
+    content: "I've accepted the booking. Looking forward to seeing Sophie and Max!",
+    timestamp: "2024-01-25T14:00:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m6",
+    conversationId: "c1",
+    senderId: "system",
+    content: "Booking confirmed! Emma Thompson will arrive at 6:00 PM on Saturday, Jan 27",
+    timestamp: "2024-01-25T14:01:00",
+    read: true,
+    type: "booking_confirmed",
+  },
+  {
+    id: "m7",
+    conversationId: "c1",
+    senderId: "1",
+    content: "Perfect! I'll see you and the kids on Saturday at 6pm!",
+    timestamp: "2024-01-25T14:30:00",
+    read: true,
+    type: "text",
+  },
+]
+
+// Testimonials for the reviews page
+export const testimonials = [
+  {
+    id: "t1",
+    name: "Jennifer Martinez",
+    role: "Mother of 2",
+    avatar: "👩‍👧‍👦",
+    rating: 5,
+    content: "Kinderly has been a game-changer for our family. Finding a reliable babysitter used to be so stressful, but now we have access to amazing, vetted sitters at the click of a button. Our kids absolutely love Emma!",
+    location: "Brooklyn, NY",
+    date: "January 2024",
+    featured: true,
+  },
+  {
+    id: "t2",
+    name: "Robert Chen",
+    role: "Father of 3",
+    avatar: "👨‍👧‍👦",
+    rating: 5,
+    content: "The trust scores and verified reviews give us peace of mind. We've found our permanent weekend sitter through Kinderly, and the booking process is seamless.",
+    location: "Manhattan, NY",
+    date: "January 2024",
+    featured: true,
+  },
+  {
+    id: "t3",
+    name: "Emma Thompson",
+    role: "Professional Babysitter",
+    avatar: "👩‍🦰",
+    rating: 5,
+    content: "As a sitter, Kinderly has transformed my career. I can set my own rates, manage my schedule, and connect with wonderful families. The platform makes everything so professional and easy.",
+    location: "Brooklyn, NY",
+    date: "December 2023",
+    featured: true,
+    isSitter: true,
+  },
+  {
+    id: "t4",
+    name: "Sarah Williams",
+    role: "Working Mom",
+    avatar: "👩‍💼",
+    rating: 5,
+    content: "The emergency booking feature has saved us multiple times when our regular childcare fell through. Within an hour, we had a verified sitter at our door. Incredible service!",
+    location: "Queens, NY",
+    date: "January 2024",
+    featured: false,
+  },
+  {
+    id: "t5",
+    name: "Michael Park",
+    role: "College Student & Sitter",
+    avatar: "👨‍🎓",
+    rating: 5,
+    content: "Kinderly is perfect for my schedule as a student. I can earn good money on weekends while doing something I love. The families are great and the payment is always on time.",
+    location: "Manhattan, NY",
+    date: "December 2023",
+    featured: false,
+    isSitter: true,
+  },
+  {
+    id: "t6",
+    name: "Amanda Johnson",
+    role: "Mother of Twins",
+    avatar: "👩‍👧‍👧",
+    rating: 5,
+    content: "Having twins is challenging, but finding the right help doesn't have to be. We found Lisa through Kinderly and she's become part of our family. The platform made it easy to find someone with newborn experience.",
+    location: "Upper East Side, NY",
+    date: "November 2023",
+    featured: false,
+  },
+]
+
+// How it works steps
+export const howItWorksSteps = [
+  {
+    step: 1,
+    title: "Search & Filter",
+    description: "Browse verified babysitters in your area. Filter by experience, certifications, availability, and more to find your perfect match.",
+    icon: "🔍",
+  },
+  {
+    step: 2,
+    title: "Review Profiles",
+    description: "Read detailed profiles, reviews from other parents, and check trust scores. View certifications and background check status.",
+    icon: "📋",
+  },
+  {
+    step: 3,
+    title: "Message & Connect",
+    description: "Send messages to potential sitters. Discuss your needs, ask questions, and get to know them before booking.",
+    icon: "💬",
+  },
+  {
+    step: 4,
+    title: "Book Instantly",
+    description: "Once you've found the right fit, book instantly through our secure platform. Manage schedules and payments all in one place.",
+    icon: "📅",
+  },
+  {
+    step: 5,
+    title: "Safe & Secure",
+    description: "All payments are handled securely. Rate your experience after each booking to help other families.",
+    icon: "🔒",
+  },
+]
+
+// Trust and safety features
+export const trustFeatures = [
+  {
+    title: "Background Checks",
+    description: "Every sitter undergoes a comprehensive multi-state background check including criminal history, sex offender registry, and identity verification.",
+    icon: "🔍",
+  },
+  {
+    title: "Identity Verification",
+    description: "We verify government-issued ID, address, and social security number for every sitter on our platform.",
+    icon: "🆔",
+  },
+  {
+    title: "Trust Scores",
+    description: "Our proprietary trust score system combines reviews, response rates, completion rates, and verification status into an easy-to-understand score.",
+    icon: "⭐",
+  },
+  {
+    title: "Secure Messaging",
+    description: "All communication happens through our secure platform. We never share personal contact information until you're ready.",
+    icon: "🔒",
+  },
+  {
+    title: "Reviews & Ratings",
+    description: "Real reviews from verified families help you make informed decisions. We detect and remove fake reviews.",
+    icon: "💬",
+  },
+  {
+    title: "24/7 Support",
+    description: "Our dedicated support team is available around the clock for any concerns or emergencies.",
+    icon: "📞",
+  },
+  {
+    title: "Secure Payments",
+    description: "All payments are processed securely through our platform. Sitters are paid promptly after each booking.",
+    icon: "💳",
+  },
+  {
+    title: "Insurance Coverage",
+    description: "Every booking is backed by our $1M liability insurance policy for added peace of mind.",
+    icon: "🛡️",
+  },
+]
+
+export function getSitterById(id: string): Sitter | undefined {
+  return sitters.find((s) => s.id === id)
+}
+
+export function getReviewsBySitterId(sitterId: string): Review[] {
+  return reviews.filter((r) => r.sitterId === sitterId)
+}

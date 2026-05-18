@@ -1,5 +1,4 @@
 "use client"
-export const dynamic = "force-dynamic"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -55,13 +54,13 @@ function SuccessBanner({ onDismiss }: { onDismiss: () => void }) {
 }
 
 // Notification item component
-function NotificationItem({
-  icon: Icon,
-  title,
-  description,
-  time,
-  isNew
-}: {
+function NotificationItem({ 
+  icon: Icon, 
+  title, 
+  description, 
+  time, 
+  isNew 
+}: { 
   icon: React.ElementType
   title: string
   description: string
@@ -86,11 +85,11 @@ function NotificationItem({
 }
 
 // Activity timeline item
-function ActivityItem({
-  type,
-  content,
-  time
-}: {
+function ActivityItem({ 
+  type, 
+  content, 
+  time 
+}: { 
   type: "booking" | "message" | "review" | "payment"
   content: string
   time: string
@@ -104,7 +103,7 @@ function ActivityItem({
       default: return CheckCircle
     }
   }
-
+  
   const getColor = () => {
     switch (type) {
       case "booking": return "bg-green-100 text-green-600"
@@ -114,9 +113,9 @@ function ActivityItem({
       default: return "bg-secondary text-muted-foreground"
     }
   }
-
+  
   const Icon = getIcon()
-
+  
   return (
     <div className="flex gap-3">
       <div className="flex flex-col items-center">
@@ -220,10 +219,9 @@ function BookingCard({ booking, compact = false }: { booking: Booking; compact?:
 
 export default function ParentDashboardPage() {
   const searchParams = useSearchParams()
-
   const [activeTab, setActiveTab] = useState("overview")
   const [showSuccessBanner, setShowSuccessBanner] = useState(false)
-
+  
   // Check for booking success parameter
   useEffect(() => {
     if (searchParams.get("booking") === "success") {
@@ -249,23 +247,23 @@ export default function ParentDashboardPage() {
 
   // Demo notifications
   const notifications = [
-    {
-      icon: CheckCircle,
-      title: "Booking Confirmed",
+    { 
+      icon: CheckCircle, 
+      title: "Booking Confirmed", 
       description: "Emma Thompson accepted your booking request",
       time: "2h ago",
       isNew: true
     },
-    {
-      icon: MessageCircle,
-      title: "New Message",
+    { 
+      icon: MessageCircle, 
+      title: "New Message", 
       description: "Michael Chen sent you a message",
       time: "5h ago",
       isNew: true
     },
-    {
-      icon: Star,
-      title: "Leave a Review",
+    { 
+      icon: Star, 
+      title: "Leave a Review", 
       description: "How was your experience with Sofia Rodriguez?",
       time: "1d ago",
       isNew: false
@@ -291,7 +289,7 @@ export default function ParentDashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-
+      
       <main className="pt-24 pb-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Success banner */}
@@ -517,8 +515,8 @@ export default function ParentDashboardPage() {
                         {demoConversations.slice(0, 3).map((conv) => {
                           const other = conv.participants.find(p => p.id !== "parent1")
                           return (
-                            <Link
-                              key={conv.id}
+                            <Link 
+                              key={conv.id} 
                               href="/messages"
                               className="flex items-center gap-4 p-4 bg-secondary/30 rounded-xl hover:bg-secondary/50 transition-colors"
                             >
