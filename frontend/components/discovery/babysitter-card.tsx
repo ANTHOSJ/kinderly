@@ -24,6 +24,7 @@ export interface BabysitterData {
   trustScore: number
   languages: string[]
   responseTime: string
+  location?: string
   availability?: {
     weekdays: boolean
     weekends: boolean

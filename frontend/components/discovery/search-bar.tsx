@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,13 +10,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search, MapPin, Calendar, SlidersHorizontal, X } from "lucide-react"
+import { Search, MapPin, Calendar, SlidersHorizontal, X, ChevronDown } from "lucide-react"
+
+// Available locations for filtering
+export const availableLocations = [
+  { id: "all", label: "All Locations", value: "" },
+  { id: "brooklyn", label: "Brooklyn, NY", value: "Brooklyn" },
+  { id: "manhattan", label: "Manhattan, NY", value: "Manhattan" },
+  { id: "queens", label: "Queens, NY", value: "Queens" },
+  { id: "bronx", label: "Bronx, NY", value: "Bronx" },
+  { id: "upper-east-side", label: "Upper East Side, NY", value: "Upper East Side" },
+  { id: "williamsburg", label: "Williamsburg, NY", value: "Williamsburg" },
+  { id: "jersey-city", label: "Jersey City, NJ", value: "Jersey City" },
+  { id: "hoboken", label: "Hoboken, NJ", value: "Hoboken" },
+]
 
 interface SearchBarProps {
   onFilterClick?: () => void
   showFilterButton?: boolean
   searchQuery?: string
   onSearchChange?: (query: string) => void
+  location?: string
+  onLocationChange?: (location: string) => void
 }
 
 export function SearchBar({ 
@@ -24,20 +39,56 @@ export function SearchBar({
   showFilterButton = false,
   searchQuery = "",
   onSearchChange,
+  location = "",
+  onLocationChange,
 }: SearchBarProps) {
-  const [location, setLocation] = useState("")
+  const [locationInput, setLocationInput] = useState(location)
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false)
   const [date, setDate] = useState("")
   const [time, setTime] = useState("anytime")
+  const locationRef = useRef<HTMLDivElement>(null)
+
+  // Sync location input with prop
+  useEffect(() => {
+    setLocationInput(location)
+  }, [location])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (locationRef.current && !locationRef.current.contains(event.target as Node)) {
+        setShowLocationDropdown(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const handleSearch = () => {
     // In a real app, this would trigger a search with all parameters
-    // For now, the search is handled via the searchQuery prop
+    // For now, the search is handled via the props
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch()
     }
+  }
+
+  const handleLocationSelect = (loc: typeof availableLocations[0]) => {
+    setLocationInput(loc.label === "All Locations" ? "" : loc.label)
+    onLocationChange?.(loc.value)
+    setShowLocationDropdown(false)
+  }
+
+  const filteredLocations = availableLocations.filter(loc => 
+    loc.label.toLowerCase().includes(locationInput.toLowerCase()) ||
+    loc.value.toLowerCase().includes(locationInput.toLowerCase())
+  )
+
+  const clearLocation = () => {
+    setLocationInput("")
+    onLocationChange?.("")
   }
 
   return (
@@ -64,15 +115,63 @@ export function SearchBar({
           )}
         </div>
 
-        {/* Location input */}
-        <div className="relative lg:w-52">
-          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        {/* Location input with dropdown */}
+        <div className="relative lg:w-56" ref={locationRef}>
+          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
           <Input 
             placeholder="Location"
-            className="pl-12 h-12 border-0 bg-secondary/50 rounded-xl text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            className="pl-12 pr-10 h-12 border-0 bg-secondary/50 rounded-xl text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+            value={locationInput}
+            onChange={(e) => {
+              setLocationInput(e.target.value)
+              setShowLocationDropdown(true)
+            }}
+            onFocus={() => setShowLocationDropdown(true)}
           />
+          {locationInput ? (
+            <button
+              onClick={clearLocation}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-background transition-colors"
+            >
+              <X className="h-4 w-4 text-muted-foreground" />
+            </button>
+          ) : (
+            <ChevronDown 
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground cursor-pointer" 
+              onClick={() => setShowLocationDropdown(!showLocationDropdown)}
+            />
+          )}
+          
+          {/* Location dropdown */}
+          {showLocationDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border/50 rounded-xl shadow-lg z-50 overflow-hidden">
+              <div className="max-h-64 overflow-y-auto py-2">
+                {filteredLocations.length === 0 ? (
+                  <div className="px-4 py-3 text-sm text-muted-foreground">
+                    No locations found
+                  </div>
+                ) : (
+                  filteredLocations.map((loc) => (
+                    <button
+                      key={loc.id}
+                      onClick={() => handleLocationSelect(loc)}
+                      className={`w-full px-4 py-2.5 text-left text-sm hover:bg-secondary/50 transition-colors flex items-center gap-3 ${
+                        location === loc.value ? "bg-primary/5 text-primary" : "text-foreground"
+                      }`}
+                    >
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>{loc.label}</span>
+                      {location === loc.value && loc.value && (
+                        <span className="ml-auto text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                          Selected
+                        </span>
+                      )}
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Date picker */}
@@ -124,6 +223,21 @@ export function SearchBar({
           </Button>
         )}
       </div>
+
+      {/* Active location indicator */}
+      {location && (
+        <div className="mt-3 flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">Filtering by location:</span>
+          <button
+            onClick={clearLocation}
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+          >
+            <MapPin className="h-3 w-3" />
+            {location}
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
 
       {/* Search suggestions when typing */}
       {searchQuery && searchQuery.length > 0 && (

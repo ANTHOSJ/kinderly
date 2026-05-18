@@ -18,9 +18,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { SlidersHorizontal, Grid3X3, LayoutList, ArrowLeft, Search, Frown, RefreshCw } from "lucide-react"
+import { SlidersHorizontal, Grid3X3, LayoutList, ArrowLeft, Search, Frown, RefreshCw, MapPin } from "lucide-react"
 import { FilterSidebar, type FilterState } from "./filter-sidebar"
-import { SearchBar } from "./search-bar"
+import { SearchBar, availableLocations } from "./search-bar"
 import { BabysitterCard, type BabysitterData } from "./babysitter-card"
 import { sitters } from "@/lib/data"
 
@@ -44,6 +44,7 @@ const transformSitters = (): BabysitterData[] => {
     languages: s.languages,
     responseTime: s.responseTime,
     availability: s.availability,
+    location: s.location,
   }))
 }
 
@@ -78,8 +79,17 @@ function sortSitters(sitters: BabysitterData[], sortBy: SortOption): BabysitterD
   }
 }
 
-function filterSitters(sitters: BabysitterData[], filters: FilterState, searchQuery: string): BabysitterData[] {
+function filterSitters(sitters: BabysitterData[], filters: FilterState, searchQuery: string, locationFilter: string): BabysitterData[] {
   return sitters.filter((sitter) => {
+    // Location filter
+    if (locationFilter) {
+      const sitterLocation = sitter.location?.toLowerCase() || ""
+      const filterLocation = locationFilter.toLowerCase()
+      if (!sitterLocation.includes(filterLocation)) {
+        return false
+      }
+    }
+
     // Search query filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
@@ -258,6 +268,7 @@ export function DiscoveryPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [sortBy, setSortBy] = useState<SortOption>("recommended")
   const [searchQuery, setSearchQuery] = useState("")
+  const [locationFilter, setLocationFilter] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters] = useState<FilterState>({
     priceRange: [10, 60],
@@ -362,13 +373,14 @@ export function DiscoveryPage() {
       topRated: false,
     })
     setSearchQuery("")
+    setLocationFilter("")
   }, [])
 
   // Memoized filtered and sorted results
   const filteredSitters = useMemo(() => {
-    const filtered = filterSitters(allBabysitters, filters, searchQuery)
+    const filtered = filterSitters(allBabysitters, filters, searchQuery, locationFilter)
     return sortSitters(filtered, sortBy)
-  }, [filters, searchQuery, sortBy])
+  }, [filters, searchQuery, sortBy, locationFilter])
 
   const availableCount = useMemo(() => 
     filteredSitters.filter(s => s.available).length, 
@@ -385,9 +397,10 @@ export function DiscoveryPage() {
       filters.certifications.length > 0 ||
       filters.availability.length > 0 ||
       filters.languages.length > 0 ||
-      searchQuery !== ""
+      searchQuery !== "" ||
+      locationFilter !== ""
     )
-  }, [filters, searchQuery])
+  }, [filters, searchQuery, locationFilter])
 
   const activeFiltersCount = useMemo(() => {
     let count = 0
@@ -432,6 +445,8 @@ export function DiscoveryPage() {
             showFilterButton
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            location={locationFilter}
+            onLocationChange={setLocationFilter}
           />
           
           {/* Quick filters */}
@@ -458,12 +473,36 @@ export function DiscoveryPage() {
               onClick={() => handleQuickFilter("topRated")}
             />
           </div>
+          
+          {/* Location quick filters */}
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <span className="text-sm text-muted-foreground mr-1">
+              <MapPin className="h-3.5 w-3.5 inline mr-1" />
+              Location:
+            </span>
+            {availableLocations.slice(1, 6).map((loc) => (
+              <Badge 
+                key={loc.id}
+                variant={locationFilter === loc.value ? "default" : "secondary"}
+                className={`rounded-full cursor-pointer transition-all hover:scale-105 ${
+                  locationFilter === loc.value 
+                    ? "bg-primary text-primary-foreground" 
+                    : "hover:bg-primary/10 hover:text-primary"
+                }`}
+                onClick={() => setLocationFilter(locationFilter === loc.value ? "" : loc.value)}
+              >
+                {loc.value}
+              </Badge>
+            ))}
+          </div>
         </div>
 
         {/* Results header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">Trusted Babysitters Near You</h1>
+            <h1 className="text-2xl font-semibold text-foreground">
+              {locationFilter ? `Babysitters in ${locationFilter}` : "Trusted Babysitters Near You"}
+            </h1>
             <p className="text-muted-foreground mt-1">
               {isLoading ? (
                 <span className="inline-flex items-center gap-2">

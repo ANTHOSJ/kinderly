@@ -176,7 +176,7 @@ function BookingCard({ booking, compact = false }: { booking: Booking; compact?:
         </div>
         <div className="text-right flex-shrink-0">
           <p className="font-semibold">${booking.totalCost}</p>
-          <p className="text-xs text-muted-foreground">{booking.hours}h</p>
+          <p className="text-xs text-muted-foreground">{booking.hours}h est.</p>
         </div>
       </div>
     )

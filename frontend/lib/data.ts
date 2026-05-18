@@ -1,88 +1,21 @@
 // Shared demo data for the Kinderly application
+// Types are now defined in ./types.ts for better organization
+// Service layer is available in ./services/ for abstracted data operations
 
-export interface Sitter {
-  id: string
-  name: string
-  avatar: string
-  rating: number
-  reviews: number
-  distance: string
-  hourlyRate: number
-  experience: string
-  experienceYears: number
-  badges: string[]
-  bio: string
-  available: boolean
-  verified: boolean
-  trustScore: number
-  languages: string[]
-  responseTime: string
-  location: string
-  availability: {
-    weekdays: boolean
-    weekends: boolean
-    evenings: boolean
-    overnight: boolean
-  }
-  gallery: string[]
-  certifications: {
-    name: string
-    issuer: string
-    year: number
-  }[]
-  education: string
-  specialties: string[]
-}
+// Re-export types from the types file for backward compatibility
+export type {
+  Sitter,
+  Review,
+  Booking,
+  Message,
+  Conversation,
+  Testimonial,
+  TrustFeature,
+  HowItWorksStep,
+} from "./types"
 
-export interface Review {
-  id: string
-  sitterId: string
-  parentName: string
-  parentAvatar: string
-  rating: number
-  date: string
-  content: string
-  helpful: number
-}
-
-export interface Booking {
-  id: string
-  sitterId: string
-  sitterName: string
-  sitterAvatar: string
-  date: string
-  startTime: string
-  endTime: string
-  hours: number
-  totalCost: number
-  status: "pending" | "confirmed" | "completed" | "cancelled"
-  notes: string
-  address: string
-  children: { name: string; age: number }[]
-}
-
-export interface Message {
-  id: string
-  conversationId: string
-  senderId: string
-  content: string
-  timestamp: string
-  read: boolean
-  type: "text" | "booking_request" | "booking_confirmed" | "system"
-}
-
-export interface Conversation {
-  id: string
-  participants: {
-    id: string
-    name: string
-    avatar: string
-    role: "parent" | "sitter"
-  }[]
-  lastMessage: string
-  lastMessageTime: string
-  unread: number
-}
+// Import types for use in this file
+import type { Sitter, Review, Booking, Message, Conversation } from "./types"
 
 export const sitters: Sitter[] = [
   {
@@ -460,7 +393,7 @@ export const demoConversations: Conversation[] = [
       { id: "parent1", name: "You", avatar: "👤", role: "parent" },
       { id: "1", name: "Emma Thompson", avatar: "👩‍🦰", role: "sitter" },
     ],
-    lastMessage: "Perfect! I'll see you and the kids on Saturday at 6pm!",
+    lastMessage: "Perfect! I'll see you and the kids on Saturday at 6pm! Is there anything specific I should know about bedtime routines?",
     lastMessageTime: "2024-01-25T14:30:00",
     unread: 0,
   },
@@ -470,8 +403,8 @@ export const demoConversations: Conversation[] = [
       { id: "parent1", name: "You", avatar: "👤", role: "parent" },
       { id: "2", name: "Michael Chen", avatar: "👨‍🦱", role: "sitter" },
     ],
-    lastMessage: "I'd be happy to help with the science project!",
-    lastMessageTime: "2024-01-25T10:15:00",
+    lastMessage: "That's one of my favorite topics! I actually have some great materials for solar system projects. We could make it really interactive with scale models. When is it due?",
+    lastMessageTime: "2024-01-25T10:25:00",
     unread: 1,
   },
   {
@@ -480,13 +413,14 @@ export const demoConversations: Conversation[] = [
       { id: "parent1", name: "You", avatar: "👤", role: "parent" },
       { id: "3", name: "Sofia Rodriguez", avatar: "👩", role: "sitter" },
     ],
-    lastMessage: "The sleep training tips I shared should help. Let me know how tonight goes!",
+    lastMessage: "The sleep training tips I shared should help. Let me know how tonight goes! Remember - consistency is key.",
     lastMessageTime: "2024-01-24T20:45:00",
     unread: 0,
   },
 ]
 
 export const demoMessages: Message[] = [
+  // Conversation with Emma (c1)
   {
     id: "m1",
     conversationId: "c1",
@@ -500,7 +434,7 @@ export const demoMessages: Message[] = [
     id: "m2",
     conversationId: "c1",
     senderId: "1",
-    content: "Hi! Yes, I'm available on Saturday. Happy to help!",
+    content: "Hi! Yes, I'm available on Saturday. Happy to help! How many children will I be watching?",
     timestamp: "2024-01-25T09:15:00",
     read: true,
     type: "text",
@@ -509,7 +443,7 @@ export const demoMessages: Message[] = [
     id: "m3",
     conversationId: "c1",
     senderId: "parent1",
-    content: "Great! I've sent a booking request.",
+    content: "Great! It's for Sophie (5) and Max (3). Sophie loves arts and crafts, and Max is really into dinosaurs right now.",
     timestamp: "2024-01-25T09:20:00",
     read: true,
     type: "text",
@@ -517,23 +451,41 @@ export const demoMessages: Message[] = [
   {
     id: "m4",
     conversationId: "c1",
-    senderId: "system",
-    content: "Booking request sent for Saturday, Jan 27 at 6:00 PM",
-    timestamp: "2024-01-25T09:21:00",
+    senderId: "1",
+    content: "That sounds wonderful! I'll bring some art supplies and maybe a dinosaur coloring book. I used to teach preschool so I have lots of activities for that age group!",
+    timestamp: "2024-01-25T09:25:00",
     read: true,
-    type: "booking_request",
+    type: "text",
   },
   {
     id: "m5",
     conversationId: "c1",
-    senderId: "1",
-    content: "I've accepted the booking. Looking forward to seeing Sophie and Max!",
-    timestamp: "2024-01-25T14:00:00",
+    senderId: "parent1",
+    content: "Perfect! I've sent a booking request.",
+    timestamp: "2024-01-25T09:30:00",
     read: true,
     type: "text",
   },
   {
     id: "m6",
+    conversationId: "c1",
+    senderId: "system",
+    content: "Booking request sent for Saturday, Jan 27 at 6:00 PM",
+    timestamp: "2024-01-25T09:31:00",
+    read: true,
+    type: "booking_request",
+  },
+  {
+    id: "m7",
+    conversationId: "c1",
+    senderId: "1",
+    content: "I've accepted the booking. Looking forward to meeting Sophie and Max!",
+    timestamp: "2024-01-25T14:00:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m8",
     conversationId: "c1",
     senderId: "system",
     content: "Booking confirmed! Emma Thompson will arrive at 6:00 PM on Saturday, Jan 27",
@@ -542,11 +494,103 @@ export const demoMessages: Message[] = [
     type: "booking_confirmed",
   },
   {
-    id: "m7",
+    id: "m9",
     conversationId: "c1",
     senderId: "1",
-    content: "Perfect! I'll see you and the kids on Saturday at 6pm!",
+    content: "Perfect! I'll see you and the kids on Saturday at 6pm! Is there anything specific I should know about bedtime routines?",
     timestamp: "2024-01-25T14:30:00",
+    read: true,
+    type: "text",
+  },
+  // Conversation with Michael (c2)
+  {
+    id: "m10",
+    conversationId: "c2",
+    senderId: "parent1",
+    content: "Hi Michael! I saw you're great with homework help. My son Ethan has a big science project coming up.",
+    timestamp: "2024-01-25T10:00:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m11",
+    conversationId: "c2",
+    senderId: "2",
+    content: "Hi! I'd be happy to help with the science project! What's the topic?",
+    timestamp: "2024-01-25T10:15:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m12",
+    conversationId: "c2",
+    senderId: "parent1",
+    content: "It's about the solar system. He needs to build a model and do a presentation.",
+    timestamp: "2024-01-25T10:20:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m13",
+    conversationId: "c2",
+    senderId: "2",
+    content: "That's one of my favorite topics! I actually have some great materials for solar system projects. We could make it really interactive with scale models. When is it due?",
+    timestamp: "2024-01-25T10:25:00",
+    read: false,
+    type: "text",
+  },
+  // Conversation with Sofia (c3)
+  {
+    id: "m14",
+    conversationId: "c3",
+    senderId: "parent1",
+    content: "Hi Sofia, we have a newborn and could really use help establishing a sleep routine.",
+    timestamp: "2024-01-24T18:00:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m15",
+    conversationId: "c3",
+    senderId: "3",
+    content: "Congratulations on your new baby! Sleep training is my specialty. How old is your little one?",
+    timestamp: "2024-01-24T18:30:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m16",
+    conversationId: "c3",
+    senderId: "parent1",
+    content: "She's 8 weeks old. We're exhausted!",
+    timestamp: "2024-01-24T18:35:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m17",
+    conversationId: "c3",
+    senderId: "3",
+    content: "I completely understand! At 8 weeks, we can start introducing some gentle routines. I usually recommend starting with a consistent bedtime routine - bath, feeding, swaddle, white noise. Would you like me to come over and help you get started?",
+    timestamp: "2024-01-24T18:45:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m18",
+    conversationId: "c3",
+    senderId: "parent1",
+    content: "That would be amazing!",
+    timestamp: "2024-01-24T19:00:00",
+    read: true,
+    type: "text",
+  },
+  {
+    id: "m19",
+    conversationId: "c3",
+    senderId: "3",
+    content: "The sleep training tips I shared should help. Let me know how tonight goes! Remember - consistency is key. It might take a few days but you'll see improvement.",
+    timestamp: "2024-01-24T20:45:00",
     read: true,
     type: "text",
   },

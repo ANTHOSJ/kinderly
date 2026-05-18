@@ -28,14 +28,15 @@ import {
   BadgeCheck,
   Plus,
   Minus,
-  CreditCard,
   MapPin,
   Calendar as CalendarIcon,
   MessageCircle,
   Download,
   Share2,
   PartyPopper,
-  Check
+  Check,
+  Banknote,
+  Info
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -196,10 +197,18 @@ function BookingSuccess({
                 </div>
               </div>
 
-              {/* Total */}
-              <div className="pt-6 border-t border-border flex items-center justify-between">
-                <span className="text-muted-foreground">Total paid</span>
-                <span className="text-2xl font-semibold text-foreground">${bookingDetails.total}</span>
+              {/* Total - Changed to estimated */}
+              <div className="pt-6 border-t border-border">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-muted-foreground">Estimated total</span>
+                  <span className="text-2xl font-semibold text-foreground">${bookingDetails.total}</span>
+                </div>
+                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <Banknote className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-amber-800">
+                    Payment is completed directly with {sitter.name.split(" ")[0]} after your session.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -247,7 +256,8 @@ function BookingSuccess({
                   "Send a message to introduce yourself and share any important details",
                   "Prepare a list of emergency contacts and important information",
                   "Show the sitter around your home when they arrive",
-                  "Discuss bedtime routines and any house rules"
+                  "Discuss bedtime routines and any house rules",
+                  "Have payment ready for the sitter at the end of your session"
                 ].map((tip, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                     <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
@@ -643,20 +653,26 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                       )}
                     </div>
 
-                    {/* Payment info */}
+                    {/* Payment info - Direct Payment */}
                     <div className="space-y-3">
-                      <h3 className="font-semibold">Payment Method</h3>
-                      <div className="flex items-center gap-3 p-4 border border-border rounded-xl bg-card">
-                        <div className="h-10 w-14 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
-                          <CreditCard className="h-5 w-5 text-white" />
+                      <h3 className="font-semibold">Payment Information</h3>
+                      <div className="p-4 border border-amber-200 bg-amber-50 rounded-xl">
+                        <div className="flex items-start gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                            <Banknote className="h-5 w-5 text-amber-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-amber-900">Direct Payment to Sitter</p>
+                            <p className="text-sm text-amber-700 mt-1">
+                              Payment is completed directly with {sitter.name.split(" ")[0]} after your babysitting session. 
+                              Cash, Venmo, or other payment methods can be arranged directly with your sitter.
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <p className="font-medium">Visa ending in 4242</p>
-                          <p className="text-sm text-muted-foreground">Expires 12/25</p>
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          Change
-                        </Button>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        <span>The estimated total is ${total} based on ${sitter.hourlyRate}/hr for {hours} hours.</span>
                       </div>
                     </div>
 
@@ -677,10 +693,10 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                         {isLoading ? (
                           <>
                             <LoadingSpinner />
-                            Processing...
+                            Confirming...
                           </>
                         ) : (
-                          `Confirm & Pay $${total}`
+                          "Confirm Booking"
                         )}
                       </Button>
                     </div>
@@ -714,22 +730,29 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
 
                     {/* Pricing breakdown */}
                     <div className="py-6 space-y-3 border-b border-border">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estimated Cost</p>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">
                           ${sitter.hourlyRate} x {hours || 0} hours
                         </span>
                         <span>${subtotal || 0}</span>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Service fee (10%)</span>
-                        <span>${serviceFee || 0}</span>
-                      </div>
                     </div>
 
                     {/* Total */}
-                    <div className="pt-6 flex justify-between">
-                      <span className="font-semibold">Total</span>
-                      <span className="font-semibold text-lg">${total || 0}</span>
+                    <div className="pt-6">
+                      <div className="flex justify-between mb-4">
+                        <span className="font-semibold">Estimated Total</span>
+                        <span className="font-semibold text-lg">${subtotal || 0}</span>
+                      </div>
+                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                        <div className="flex items-start gap-2">
+                          <Banknote className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-amber-800">
+                            Pay directly to your sitter after the session
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Trust badges */}
@@ -744,7 +767,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span>Secure payment processing</span>
+                        <span>Verified background check</span>
                       </div>
                     </div>
                   </CardContent>
