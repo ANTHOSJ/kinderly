@@ -1,7 +1,7 @@
 "use client"
 export const dynamic = "force-dynamic"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -218,18 +218,29 @@ function BookingCard({ booking, compact = false }: { booking: Booking; compact?:
   )
 }
 
-export default function ParentDashboardPage() {
+function BookingSuccessHandler({
+  setShowSuccessBanner,
+}: {
+  setShowSuccessBanner: (value: boolean) => void
+}) {
   const searchParams = useSearchParams()
 
-  const [activeTab, setActiveTab] = useState("overview")
-  const [showSuccessBanner, setShowSuccessBanner] = useState(false)
-
-  // Check for booking success parameter
   useEffect(() => {
     if (searchParams.get("booking") === "success") {
       setShowSuccessBanner(true)
     }
-  }, [searchParams])
+  }, [searchParams, setShowSuccessBanner])
+
+  return null
+}
+
+
+export default function ParentDashboardPage() {
+
+  const [activeTab, setActiveTab] = useState("overview")
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false)
+
+
 
   // Demo user data
   const user = {
@@ -293,6 +304,11 @@ export default function ParentDashboardPage() {
       <Navbar />
 
       <main className="pt-24 pb-16">
+        <Suspense fallback={null}>
+          <BookingSuccessHandler
+            setShowSuccessBanner={setShowSuccessBanner}
+          />
+        </Suspense>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Success banner */}
           {showSuccessBanner && (
